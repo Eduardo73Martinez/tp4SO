@@ -113,7 +113,7 @@ class AbstractInterruptionHandler():
             print("agregue algo a la cola")
 
     def loadProgramInDispacher(self):
-        if  not self._kernel.scheduler.isEmpty(): 
+        if  not self._kernel._scheduler.isEmpty(): 
             pcbACargar = self.kernel.getScheduler.getNext()
             #pcbCorriendo = self.getKernel.getPcbTable.getRunningPCB
             #self.cargarEnCpuConModoExpropiativo(pcbCorriendo, pcbACargar)
@@ -184,6 +184,19 @@ class NewInterruptionHandler(AbstractInterruptionHandler):
         baseDir  = self.getKernel.getLoader.write(program)
         pcb._baseDir = baseDir
         self.loadProgramIfNotRuningInTable(pcb)
+        self.kernel.getPcbTable.addPcb(pcb)
+
+class TimeoutInterruptionHandler(AbstractInterruptionHandler):
+
+    def execute(self, irq):
+        if (not self._kernel._scheduler.isEmpty()):
+            acPcb = self._kernel.pcbTable.runningPCB()
+            sigPcb = self.kernel._scheduler.getNext()
+            self._kernel.dispatcher.save(acPcb)
+            acPcb.setState("Ready")
+            self._kernel.scheduler.add(acPcb)
+            self._kernel.dispatcher.load(sigPcb)
+            print("expropie")
         
         
 ## ####################################### --SCHEDULERS-- ########################################################  
@@ -279,6 +292,9 @@ class Kernel():
 
         ioOutHandler = IoOutInterruptionHandler(self)
         HARDWARE.interruptVector.register(IO_OUT_INTERRUPTION_TYPE, ioOutHandler)
+
+        timeoutHandler = TimeoutInterruptionHandler(self)
+        HARDWARE.interruptVector.register(TIMEOUT_INTERRUPTION_TYPE, timeoutHandler)
 
         ## controls the Hardware's I/O Device
         self._ioDeviceController = IoDeviceController(HARDWARE.ioDevice)

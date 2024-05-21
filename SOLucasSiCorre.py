@@ -150,7 +150,7 @@ class AbstractInterruptionHandler:
 
         else:
             self._kernel.dispatcher.load(pcb)
-            
+
     def runNextIfPossible(self):
         if not self._kernel.scheduler.isEmpty():
             next_program = self._kernel.scheduler.get()
@@ -166,7 +166,6 @@ class KillInterruptionHandler(AbstractInterruptionHandler):
         pcb = self._kernel.pcbTable.activeProcess()
         pcb.setState("Finished")
         self._kernel.pcbTable.setActiveProcess(False)
-        HARDWARE.cpu.pc = -1  ## dejamos el CPU IDLE
         self.runNextIfPossible()
 
 
